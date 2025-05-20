@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/pokemon_list_response.dart';
 import '../services/pokemon_api.dart';
 import 'pokemon_detail_page.dart';
+import '../models/navigable_pokemon.dart';
 
 class PokemonListPage extends StatefulWidget {
   const PokemonListPage({super.key, required this.title});
@@ -12,13 +13,42 @@ class PokemonListPage extends StatefulWidget {
 }
 
 class _PokemonListPageState extends State<PokemonListPage> {
-  late Future<PokemonListApiResponse> _futureList;
+  final List<NavigablePokemon> _pokemons = [];
+  final ScrollController _scrollController = ScrollController();
+
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _limit = 20;
+  int _offset = 0;
+
   final _api = PokemonApi();
 
   @override
   void initState() {
     super.initState();
     _futureList = _api.fetchPokemonList();
+  }
+
+  Future<void> _loadPokemons() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _api.fetchPokemonList(
+        limit: _limit,
+        offset: _offset,
+      );
+      setState(() {
+        _offset += _limit;
+        _pokemons.addAll(response.results);
+        _hasMore = response.next != null;
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar pokemons: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
