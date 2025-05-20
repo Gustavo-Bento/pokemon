@@ -76,16 +76,13 @@ class PokemonApi {
   Future<List<NavigablePokemon>> searchPokemon(String name) async {
     final endpoint = Uri.parse(_buscarUrl);
     const grapqlQuery = r'''
-      query search($like: string!){
-        pokemon_v2_pokemon(where: {name : {
-          _like: $like
-        }})
-        {
-          id
-          name
-        }
-      }
-''';
+ query search($like: String!) {
+pokemon_v2_pokemon(where: { name: { _like: $like } }) {
+ id
+ name
+ }
+ }
+ ''';
     final variables = {'like': '%${name.toLowerCase()}%'};
     final body = jsonEncode({'query': grapqlQuery, 'variables': variables});
 
